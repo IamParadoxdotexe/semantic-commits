@@ -3,17 +3,15 @@ import { existsSync } from "fs";
 var exec = require('child_process').exec;
 const { readFileSync, writeFileSync } = require('fs');
 
-const versionJsonPath = './version.json';
-
 const prefixOptions = ['PATCH', 'MINOR', 'MAJOR'];
 const postfixMinLength = 8;
 
-(async () => {
+export async function commitMsg(commitMessagePath: string) {
+    const versionJsonPath = './version.json';
+
     // read commit message
-    const commitMessagePath = process.argv.slice(-1)[0];
     const rawMessage = readFileSync(commitMessagePath, 'utf-8');
     let message = rawMessage.split(/\r?\n/)[0];
-    console.log(`Reading commit message "${message}"...`);
 
     // check if commit is first on the branch
     let currentBranch = '';
@@ -46,7 +44,7 @@ const postfixMinLength = 8;
         } else if (currentBranch.match(/^(bug|fix|improvement)\/.+/g)) {
             messageParts.unshift('PATCH');
         } else {
-            throwError(`Initial commit message should take the form "{${prefixOptions.join('|')}}: {message}".`);
+            throwError(`First commit message should take the form "{${prefixOptions.join('|')}}: {message}".`);
         }
 
         // update commit message if it was auto-prefixed
@@ -58,19 +56,18 @@ const postfixMinLength = 8;
     const messagePrefix = messageParts[0];
     if (!prefixOptions.includes(messagePrefix)) {
         throwError(
-            `Initial commit message prefix must be one of the following version types: [${prefixOptions.join(', ')}].`
+            `Commit message prefix must be one of the following version types: [${prefixOptions.join(', ')}].`
         );
     }
 
     // check for valid postfix
     const messagePostfix = messageParts[1];
     if (messagePostfix.trim().length < postfixMinLength) {
-        throwError(`Initial commit message postfix must be at least ${postfixMinLength} characters.`);
+        throwError(`Commit message postfix must be at least ${postfixMinLength} characters.`);
     }
 
     // ensure version file exists
     if (!existsSync(versionJsonPath)) {
-        console.log('Creating new version.json file....')
         const defaultVervsionJson = { version: '0.0.0', versionCommitHash: '' }
         writeFileSync(versionJsonPath, JSON.stringify(defaultVervsionJson, null, 4) + '\n');
     }
@@ -96,9 +93,32 @@ const postfixMinLength = 8;
 
     console.log(`Updating version from ${oldVersion} to ${newVersion}...`);
     writeFileSync(versionJsonPath, JSON.stringify(versionJson, null, 4) + '\n');
-})();
+}
+
+export function postCommit() {
+    const versionJsonPath = 'version.json';
+
+    exec('git diff --name-only', (_error: string, stdout: string) => {
+        const modifiedFiles = stdout.trim().split(/\r?\n/);
+
+        // check if version.json has been modified by commit-msg hook
+        if (modifiedFiles.includes(versionJsonPath)) {
+            exec('git rev-parse --short HEAD', (_error: string, stdout: string) => {
+                const hash = stdout.trim();
+
+                // add commit hash to version.json
+                const versionJson = JSON.parse(readFileSync(`./${versionJsonPath}`, 'utf-8'));
+                versionJson.versionCommitHash = hash;
+                writeFileSync(`./${versionJsonPath}`, JSON.stringify(versionJson, null, 4) + '\n');
+
+                // amend the last commit to include the updated version.json
+                exec(`git commit --amend -C HEAD -n ${versionJsonPath}`);
+            });
+        }
+    });
+}
 
 function throwError(message: string) {
-    console.error(message);
+    console.error(`semantic-commits - ${ message }`);
     process.exit(1);
 }

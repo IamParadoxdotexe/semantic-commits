@@ -1,13 +1,22 @@
 {
+  "name": "semantic-commits",
+  "version": "0.1.0",
+  "author": "Nathan Klingensmith",
+  "email": "paradoxpyt@gmail.com",
+  "url": "https://thenjk.com",
+  "description": "Automatic semantic versions via commit messages",
+  "keywords": ["auto", "version", "semantic", "commit", "message", "automatic", "semver"],
   "devDependencies": {
     "@types/node": "^18.11.18",
     "husky": "^8.0.3",
     "typescript": "^4.9.4"
   },
+  "bin": "dist/bin.js",
+  "main": "dist/index.js",
   "scripts": {
     "prepare": "husky install",
-    "build": "tsc --build",
-    "commit-msg": "node dist/src/commit-msg.js",
-    "post-commit": "node dist/src/post-commit.js"
-  }
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "files": ["/dist/src/*"]
 }

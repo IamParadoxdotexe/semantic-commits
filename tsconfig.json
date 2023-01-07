@@ -6,9 +6,6 @@
       "module": "commonjs",
       "noImplicitAny": true,
       "outDir": "dist",
-      "rootDir": "."
-    },
-    "include": [
-        "./src/"
-    ]
+      "rootDir": "src",
+    }
   }
