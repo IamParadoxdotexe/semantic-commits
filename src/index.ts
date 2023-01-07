@@ -13,6 +13,7 @@ export const config = {
     "majorBranchPrefixes": ['release/'],
     "minorBranchPrefixes": ['feature/', 'refactor/'],
     "patchBranchPrefixes": ['bug/', 'fix/', 'improvement/'],
+    "head": "origin",
     ...packageJson["semanticCommits"]
 }
 
@@ -32,7 +33,7 @@ export async function commitMsg(commitMessagePath: string) {
         exec('git branch --show-current', (_error: ExecException, stdout: string) => {
             currentBranch = stdout.trim();
 
-            exec(`git rev-list --count origin..${currentBranch}`, (_error: ExecException, stdout: string) => {
+            exec(`git rev-list --count ${config.head}..${currentBranch}`, (_error: ExecException, stdout: string) => {
                 const commits = parseInt(stdout);
                 // only the first commit of a branch should be version marked
                 if (commits > 0) {
