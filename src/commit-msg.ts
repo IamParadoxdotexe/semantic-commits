@@ -25,7 +25,10 @@ const postfixMinLength = 8;
             exec(`git rev-list --count origin..${currentBranch}`, (_error: string, stdout: string) => {
                 const commits = parseInt(stdout);
                 // only the first commit of a branch should be version marked
-                if (commits > 0) process.exit();
+                if (commits > 0) {
+                    console.log(`Branch already has ${commits} commit${commits > 1 ? 's' : ''}. Skipping version update...`)
+                    process.exit();
+                }
                 resolve();
             });
         });
@@ -92,7 +95,7 @@ const postfixMinLength = 8;
     const newVersion = versionParts.join('.');
     versionJson.version = newVersion;
 
-    console.log(`Updating app version from ${oldVersion} to ${newVersion}...`);
+    console.log(`Updating version from ${oldVersion} to ${newVersion}...`);
     writeFileSync(versionJsonPath, JSON.stringify(versionJson, null, 4) + '\n');
 })();
 

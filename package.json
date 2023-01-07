@@ -7,7 +7,7 @@
   "scripts": {
     "prepare": "husky install",
     "build": "tsc --build",
-    "auto-version": "node dist/src/auto-version.js",
-    "auto-version-post-commit": "node dist/src/auto-version-post-commit.js"
+    "commit-msg": "node dist/src/commit-msg.js",
+    "post-commit": "node dist/src/post-commit.js"
   }
 }
