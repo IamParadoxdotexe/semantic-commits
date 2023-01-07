@@ -15,6 +15,7 @@ export const config = {
     "patchBranchPrefixes": ['bug/', 'fix/', 'improvement/'],
     "head": "origin",
     "updatePackageVersion": true,
+    "indent": 2,
     ...packageJson.value["semanticCommits"]
 }
 
@@ -114,13 +115,13 @@ export async function commitMsg(commitMessagePath: string) {
     console.log(`Updating version from ${oldVersion} to ${newVersion}...`);
 
     // update main version file
-    writeFileSync(versionJsonPath, JSON.stringify(versionJson, null, 4) + '\n');
+    writeFileSync(versionJsonPath, JSON.stringify(versionJson, null, config.indent) + '\n');
 
     // if enabled, update package.json
     if (config.updatePackageVersion) {
         packageJson.value.version = newVersion;
         delete packageJson.value.__path;
-        writeFileSync(packageJson.filename, JSON.stringify(packageJson.value, null, 4) + '\n');
+        writeFileSync(packageJson.filename, JSON.stringify(packageJson.value, null, config.indent) + '\n');
     }
 }
 
@@ -138,7 +139,7 @@ export function postCommit() {
                 // add commit hash to version.json
                 const versionJson = JSON.parse(readFileSync(`./${versionJsonPath}`, 'utf-8'));
                 versionJson.versionCommitHash = hash;
-                writeFileSync(`./${versionJsonPath}`, JSON.stringify(versionJson, null, 4) + '\n');
+                writeFileSync(`./${versionJsonPath}`, JSON.stringify(versionJson, null, config.indent) + '\n');
 
                 // amend the last commit to include the updated version.json
                 exec(`git commit --amend -C HEAD -n ${versionJsonPath}`);
