@@ -13,7 +13,6 @@ const postfixMinLength = 8;
     const commitMessagePath = process.argv.slice(-1)[0];
     const rawMessage = readFileSync(commitMessagePath, 'utf-8');
     let message = rawMessage.split(/\r?\n/)[0];
-    message = 'PATCH: First commit'
     console.log(`Reading commit message "${message}"...`);
 
     // check if commit is first on the branch
