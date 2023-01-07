@@ -5,8 +5,17 @@
   "email": "paradoxpyt@gmail.com",
   "url": "https://thenjk.com",
   "description": "Automatic semantic versions via commit messages",
-  "keywords": ["auto", "version", "semantic", "commit", "message", "automatic", "semver"],
+  "keywords": [
+    "auto",
+    "version",
+    "semantic",
+    "commit",
+    "message",
+    "automatic",
+    "semver"
+  ],
   "devDependencies": {
+    "@types/find-package-json": "^1.2.3",
     "@types/node": "^18.11.18",
     "husky": "^8.0.3",
     "typescript": "^4.9.4"
@@ -18,5 +27,10 @@
     "build": "tsc",
     "prepublishOnly": "npm run build"
   },
-  "files": ["/dist/src/*"]
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "find-package-json": "^1.2.0"
+  }
 }

@@ -1,13 +1,26 @@
-import { existsSync } from "fs";
+import { existsSync, readFileSync, writeFileSync } from "fs";
+import { exec, ExecException } from 'child_process';
+import * as finder from 'find-package-json';
 
-var exec = require('child_process').exec;
-const { readFileSync, writeFileSync } = require('fs');
+// merge package.json configuration with default config
+const packageJson = finder().next().value;
+export const config = {
+    "majorPrefix": "MAJOR",
+    "minorPrefix": "MINOR",
+    "patchPrefix": "PATCH",
+    "minPostfixLength": 8,
+    "versionFilePath": 'version.json',
+    "majorBranchPrefixes": ['release/'],
+    "minorBranchPrefixes": ['feature/', 'refactor/'],
+    "patchBranchPrefixes": ['bug/', 'fix/', 'improvement/'],
+    ...packageJson["semanticCommits"]
+}
 
-const prefixOptions = ['PATCH', 'MINOR', 'MAJOR'];
-const postfixMinLength = 8;
+const prefixOptions = [config.patchPrefix, config.minorPrefix, config.majorPrefix];
+const minPostfixLength = config.minPostfixLength;
 
 export async function commitMsg(commitMessagePath: string) {
-    const versionJsonPath = './version.json';
+    const versionJsonPath = `./${config.versionFilePath}`;
 
     // read commit message
     const rawMessage = readFileSync(commitMessagePath, 'utf-8');
@@ -16,10 +29,10 @@ export async function commitMsg(commitMessagePath: string) {
     // check if commit is first on the branch
     let currentBranch = '';
     await new Promise<void>(resolve => {
-        exec('git branch --show-current', (_error: string, stdout: string) => {
+        exec('git branch --show-current', (_error: ExecException, stdout: string) => {
             currentBranch = stdout.trim();
 
-            exec(`git rev-list --count origin..${currentBranch}`, (_error: string, stdout: string) => {
+            exec(`git rev-list --count origin..${currentBranch}`, (_error: ExecException, stdout: string) => {
                 const commits = parseInt(stdout);
                 // only the first commit of a branch should be version marked
                 if (commits > 0) {
@@ -39,10 +52,15 @@ export async function commitMsg(commitMessagePath: string) {
     // check for core composition
     const messageParts = message.split(': ');
     if (messageParts.length != 2) {
-        if (currentBranch.match(/^(feature|refactor)\/.+/g)) {
-            messageParts.unshift('MINOR');
-        } else if (currentBranch.match(/^(bug|fix|improvement)\/.+/g)) {
-            messageParts.unshift('PATCH');
+        const testPrefixes = (prefixes: string[]) => 
+            prefixes.length && (new RegExp(`^(${prefixes.join('|')}).+$`)).test(currentBranch);
+
+        if (testPrefixes(config.majorBranchPrefixes)) {
+            messageParts.unshift(config.majorPrefix);
+        } else if (testPrefixes(config.minorBranchPrefixes)) {
+            messageParts.unshift(config.minorPrefix);
+        } else if (testPrefixes(config.patchBranchPrefixes)) {
+            messageParts.unshift(config.patchPrefix);
         } else {
             throwError(`First commit message should take the form "{${prefixOptions.join('|')}}: {message}".`);
         }
@@ -62,8 +80,8 @@ export async function commitMsg(commitMessagePath: string) {
 
     // check for valid postfix
     const messagePostfix = messageParts[1];
-    if (messagePostfix.trim().length < postfixMinLength) {
-        throwError(`Commit message postfix must be at least ${postfixMinLength} characters.`);
+    if (messagePostfix.trim().length < minPostfixLength) {
+        throwError(`Commit message postfix must be at least ${minPostfixLength} characters.`);
     }
 
     // ensure version file exists
@@ -77,11 +95,11 @@ export async function commitMsg(commitMessagePath: string) {
     const oldVersion: string = versionJson.version;
     const versionParts = oldVersion.split('.').map(v => parseInt(v, 10));
 
-    if (messagePrefix == 'MAJOR') {
+    if (messagePrefix == config.majorPrefix) {
         versionParts[0]++;
         versionParts[1] = 0;
         versionParts[2] = 0;
-    } else if (messagePrefix == 'MINOR') {
+    } else if (messagePrefix == config.minorPrefix) {
         versionParts[1]++;
         versionParts[2] = 0;
     } else {
@@ -96,14 +114,14 @@ export async function commitMsg(commitMessagePath: string) {
 }
 
 export function postCommit() {
-    const versionJsonPath = 'version.json';
+    const versionJsonPath = config.versionFilePath;
 
-    exec('git diff --name-only', (_error: string, stdout: string) => {
+    exec('git diff --name-only', (_error: ExecException, stdout: string) => {
         const modifiedFiles = stdout.trim().split(/\r?\n/);
 
         // check if version.json has been modified by commit-msg hook
         if (modifiedFiles.includes(versionJsonPath)) {
-            exec('git rev-parse --short HEAD', (_error: string, stdout: string) => {
+            exec('git rev-parse --short HEAD', (_error: ExecException, stdout: string) => {
                 const hash = stdout.trim();
 
                 // add commit hash to version.json
