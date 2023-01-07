@@ -3,7 +3,7 @@ import { exec, ExecException } from 'child_process';
 import * as finder from 'find-package-json';
 
 // merge package.json configuration with default config
-const packageJson = finder().next().value;
+const packageJson = finder().next();
 export const config = {
     "majorPrefix": "MAJOR",
     "minorPrefix": "MINOR",
@@ -14,7 +14,8 @@ export const config = {
     "minorBranchPrefixes": ['feature/', 'refactor/'],
     "patchBranchPrefixes": ['bug/', 'fix/', 'improvement/'],
     "head": "origin",
-    ...packageJson["semanticCommits"]
+    "updatePackageVersion": true,
+    ...packageJson.value["semanticCommits"]
 }
 
 const prefixOptions = [config.patchPrefix, config.minorPrefix, config.majorPrefix];
@@ -111,7 +112,16 @@ export async function commitMsg(commitMessagePath: string) {
     versionJson.version = newVersion;
 
     console.log(`Updating version from ${oldVersion} to ${newVersion}...`);
+
+    // update main version file
     writeFileSync(versionJsonPath, JSON.stringify(versionJson, null, 4) + '\n');
+
+    // if enabled, update package.json
+    if (config.updatePackageVersion) {
+        packageJson.value.version = newVersion;
+        delete packageJson.value.__path;
+        writeFileSync(packageJson.filename, JSON.stringify(packageJson.value, null, 4) + '\n');
+    }
 }
 
 export function postCommit() {
@@ -132,6 +142,11 @@ export function postCommit() {
 
                 // amend the last commit to include the updated version.json
                 exec(`git commit --amend -C HEAD -n ${versionJsonPath}`);
+
+                // if enabled, ammend last commit to include updated package.json
+                if (config.updatePackageVersion) {
+                    exec(`git commit --amend -C HEAD -n ${packageJson.filename}`);
+                }
             });
         }
     });
