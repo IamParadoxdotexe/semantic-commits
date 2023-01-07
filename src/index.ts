@@ -3,7 +3,7 @@ import { exec, ExecException } from 'child_process';
 import * as finder from 'find-package-json';
 
 // merge package.json configuration with default config
-const packageJson = finder().next().value;
+const packageJson = finder().next();
 export const config = {
     "majorPrefix": "MAJOR",
     "minorPrefix": "MINOR",
@@ -13,7 +13,10 @@ export const config = {
     "majorBranchPrefixes": ['release/'],
     "minorBranchPrefixes": ['feature/', 'refactor/'],
     "patchBranchPrefixes": ['bug/', 'fix/', 'improvement/'],
-    ...packageJson["semanticCommits"]
+    "head": "origin",
+    "updatePackageVersion": true,
+    "indent": 2,
+    ...packageJson.value["semanticCommits"]
 }
 
 const prefixOptions = [config.patchPrefix, config.minorPrefix, config.majorPrefix];
@@ -32,7 +35,7 @@ export async function commitMsg(commitMessagePath: string) {
         exec('git branch --show-current', (_error: ExecException, stdout: string) => {
             currentBranch = stdout.trim();
 
-            exec(`git rev-list --count origin..${currentBranch}`, (_error: ExecException, stdout: string) => {
+            exec(`git rev-list --count ${config.head}..${currentBranch}`, (_error: ExecException, stdout: string) => {
                 const commits = parseInt(stdout);
                 // only the first commit of a branch should be version marked
                 if (commits > 0) {
@@ -110,7 +113,16 @@ export async function commitMsg(commitMessagePath: string) {
     versionJson.version = newVersion;
 
     console.log(`Updating version from ${oldVersion} to ${newVersion}...`);
-    writeFileSync(versionJsonPath, JSON.stringify(versionJson, null, 4) + '\n');
+
+    // update main version file
+    writeFileSync(versionJsonPath, JSON.stringify(versionJson, null, config.indent) + '\n');
+
+    // if enabled, update package.json
+    if (config.updatePackageVersion) {
+        packageJson.value.version = newVersion;
+        delete packageJson.value.__path;
+        writeFileSync(packageJson.filename, JSON.stringify(packageJson.value, null, config.indent) + '\n');
+    }
 }
 
 export function postCommit() {
@@ -127,10 +139,15 @@ export function postCommit() {
                 // add commit hash to version.json
                 const versionJson = JSON.parse(readFileSync(`./${versionJsonPath}`, 'utf-8'));
                 versionJson.versionCommitHash = hash;
-                writeFileSync(`./${versionJsonPath}`, JSON.stringify(versionJson, null, 4) + '\n');
+                writeFileSync(`./${versionJsonPath}`, JSON.stringify(versionJson, null, config.indent) + '\n');
 
                 // amend the last commit to include the updated version.json
                 exec(`git commit --amend -C HEAD -n ${versionJsonPath}`);
+
+                // if enabled, ammend last commit to include updated package.json
+                if (config.updatePackageVersion) {
+                    exec(`git commit --amend -C HEAD -n ${packageJson.filename}`);
+                }
             });
         }
     });
