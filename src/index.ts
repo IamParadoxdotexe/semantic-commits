@@ -56,11 +56,11 @@ export async function commitMsg(commitMessagePath: string) {
             prefixes.length && (new RegExp(`^(${prefixes.join('|')}).+$`)).test(currentBranch);
 
         if (testPrefixes(config.majorBranchPrefixes)) {
-            messageParts.unshift('MAJOR');
+            messageParts.unshift(config.majorPrefix);
         } else if (testPrefixes(config.minorBranchPrefixes)) {
-            messageParts.unshift('MINOR');
+            messageParts.unshift(config.minorPrefix);
         } else if (testPrefixes(config.patchBranchPrefixes)) {
-            messageParts.unshift('PATCH');
+            messageParts.unshift(config.patchPrefix);
         } else {
             throwError(`First commit message should take the form "{${prefixOptions.join('|')}}: {message}".`);
         }
@@ -95,11 +95,11 @@ export async function commitMsg(commitMessagePath: string) {
     const oldVersion: string = versionJson.version;
     const versionParts = oldVersion.split('.').map(v => parseInt(v, 10));
 
-    if (messagePrefix == 'MAJOR') {
+    if (messagePrefix == config.majorPrefix) {
         versionParts[0]++;
         versionParts[1] = 0;
         versionParts[2] = 0;
-    } else if (messagePrefix == 'MINOR') {
+    } else if (messagePrefix == config.minorPrefix) {
         versionParts[1]++;
         versionParts[2] = 0;
     } else {
