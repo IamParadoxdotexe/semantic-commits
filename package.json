@@ -1,6 +1,6 @@
 {
   "name": "semantic-commits",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "author": "Nathan Klingensmith",
   "email": "paradoxpyt@gmail.com",
   "url": "https://thenjk.com",
@@ -12,6 +12,7 @@
   },
   "license": "MIT",
   "keywords": [
+    "auto",
     "version",
     "semantic",
     "commit"
@@ -27,6 +28,7 @@
   "bin": "dist/bin.js",
   "main": "dist/index.js",
   "scripts": {
+    "prepare": "semantic-commits install",
     "build": "tsc",
     "test": "ts-mocha -p tsconfig.json src/**/*.spec.ts",
     "prepublishOnly": "npm run build"
