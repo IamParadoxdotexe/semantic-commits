@@ -20,7 +20,7 @@ const [, , cmd, ...args] = process.argv
 // CLI commands
 const cmds: { [key: string]: () => void | Promise<void> } = {
     'install': sc.install,
-    'config': () => console.log(sc.config),
+    'config': () => console.log(sc.getConfig()),
     'commit-msg': () => sc.commitMsg(args[0] ?? defaultCommitMessagePath),
     'post-commit': sc.postCommit,
     ['-v']: () =>

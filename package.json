@@ -1,6 +1,6 @@
 {
   "name": "semantic-commits",
-  "version": "0.5.4",
+  "version": "0.6.0",
   "author": "Nathan Klingensmith",
   "email": "paradoxpyt@gmail.com",
   "url": "https://thenjk.com",
@@ -17,18 +17,24 @@
     "commit"
   ],
   "devDependencies": {
+    "@types/expect": "^24.3.0",
     "@types/find-package-json": "^1.2.3",
+    "@types/mocha": "^10.0.1",
     "@types/node": "^18.11.18",
+    "ts-mocha": "^10.0.0",
     "typescript": "^4.9.4"
   },
   "bin": "dist/bin.js",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
+    "test": "ts-mocha -p tsconfig.json src/**/*.spec.ts",
     "prepublishOnly": "npm run build"
   },
   "files": [
-    "dist"
+    "dist",
+    "!dist/**/*.spec.d.ts",
+    "!dist/**/*.spec.js"
   ],
   "dependencies": {
     "find-package-json": "^1.2.0"

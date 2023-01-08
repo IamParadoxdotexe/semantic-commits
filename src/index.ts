@@ -5,8 +5,22 @@ export const packageJson = finder().next();
 
 export const packagePath = packageJson.filename.split('/').slice(0, -1).join('/');
 
+export interface Config {
+    majorPrefix: string;
+    minorPrefix: string;
+    patchPrefix: string;
+    minPostfixLength: number;
+    versionFilePath: string;
+    majorBranchPrefixes: string[];
+    minorBranchPrefixes: string[];
+    patchBranchPrefixes: string[];
+    head: string;
+    updatePackageVersion: boolean;
+    indent: number;
+}
+
 // merge package.json configuration with default config
-export const config = {
+const defaultConfig: Config = {
     "majorPrefix": "MAJOR",
     "minorPrefix": "MINOR",
     "patchPrefix": "PATCH",
@@ -21,11 +35,20 @@ export const config = {
     ...packageJson.value["semanticCommits"]
 }
 
-export const versionJsonPath = path.join(packagePath, config.versionFilePath);
+export function getConfig(configOverrides?: Partial<Config>): Config {
+    return {
+        ...defaultConfig,
+        ...(configOverrides || packageJson.value["semanticCommits"])
+    }
+}
 
-export function throwError(message: string) {
-    console.error(`semantic-commits - ${ message }`);
-    process.exit(1);
+export function throwError(message: string, exit=true) {
+    if (exit) {
+        console.error(`semantic-commits - ${ message }`);
+        process.exit(1);
+    } else {
+        throw new Error(`semantic-commits - ${ message }`)
+    }
 }
 
 export * from './install';
