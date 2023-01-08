@@ -1,10 +1,16 @@
 {
   "name": "semantic-commits",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "author": "Nathan Klingensmith",
   "email": "paradoxpyt@gmail.com",
   "url": "https://thenjk.com",
   "description": "Automatic semantic versions via commit messages",
+  "homepage": "https://github.com/IamParadoxdotexe/semantic-commits#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/IamParadoxdotexe/semantic-commits.git"
+  },
+  "license": "MIT",
   "keywords": [
     "version",
     "semantic",
