@@ -3,7 +3,9 @@ import { exec, ExecException } from 'child_process';
 import * as path from 'path';
 import { Config, getConfig, packageJson, throwError,packagePath } from '..';
 
-export async function commitMsg(commitMessagePath: string, configOverrides?: Partial<Config>, currentBranchOverride?: string, exit=true) {
+export const defaultCommitMessagePath = '.git/COMMIT_EDITMSG';
+
+export async function commitMsg(commitMessagePath=defaultCommitMessagePath, configOverrides?: Partial<Config>, currentBranchOverride?: string, exit=true) {
     const config = configOverrides ? getConfig(configOverrides) : getConfig();
 
     const prefixOptions = [config.patchPrefix, config.minorPrefix, config.majorPrefix];

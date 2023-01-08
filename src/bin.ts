@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 import path = require('path')
+import { defaultCommitMessagePath } from './commit-msg'
 import sc = require('./')
-
-const defaultCommitMessagePath = '.git/COMMIT_EDITMSG';
 
 // Show usage and exit with code
 function help(code: number) {
@@ -21,7 +20,7 @@ const [, , cmd, ...args] = process.argv
 const cmds: { [key: string]: () => void | Promise<void> } = {
     'install': sc.install,
     'config': () => console.log(sc.getConfig()),
-    'commit-msg': () => sc.commitMsg(args[0] ?? defaultCommitMessagePath),
+    'commit-msg': () => sc.commitMsg(args[0]),
     'post-commit': sc.postCommit,
     ['-v']: () =>
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-var-requires
