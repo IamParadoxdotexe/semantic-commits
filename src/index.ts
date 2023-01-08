@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import { exec, ExecException } from 'child_process';
 import * as finder from 'find-package-json';
+import * as path from 'path';
 
 // merge package.json configuration with default config
 const packageJson = finder().next();
@@ -13,7 +14,7 @@ export const config = {
     "majorBranchPrefixes": ['release/'],
     "minorBranchPrefixes": ['feature/', 'refactor/'],
     "patchBranchPrefixes": ['bug/', 'fix/', 'improvement/'],
-    "head": "origin",
+    "head": "origin/HEAD",
     "updatePackageVersion": true,
     "indent": 2,
     ...packageJson.value["semanticCommits"]
@@ -21,6 +22,53 @@ export const config = {
 
 const prefixOptions = [config.patchPrefix, config.minorPrefix, config.majorPrefix];
 const minPostfixLength = config.minPostfixLength;
+
+const packagePath = packageJson.filename.split('/').slice(0, -1).join('/');
+
+const hooks = [
+    ['commit-msg', 'semantic-commits commit-msg $1'],
+    ['post-commit', 'semantic-commits post-commit']
+]
+
+const hookComment = '# Installed by semantic-commits.';
+const hookShebang = `#!/bin/sh`
+
+export function install() {
+    exec('git config core.hooksPath', { cwd: packagePath }, (_error: ExecException, stdout: string) => {
+        const hooksPath = path.join(packagePath, stdout.trim());
+
+        for (const [hookName, hookScript] of hooks) {
+            const hookPath = path.join(hooksPath, hookName);
+
+            if (existsSync(hookPath)) {
+                const currentHook = readFileSync(hookPath, 'utf-8');
+                const currentHookLines = currentHook.split('\n');
+
+                const currentHookShebang = currentHookLines[0];
+                if (!currentHookShebang.startsWith('#!') || !currentHookShebang.endsWith('sh')) {
+                    throwError(`An existing ${hookName} hook exists at ${hookPath} with unexpected shebang "${currentHookShebang}". You must install semantic-commits manually.`)
+                }
+
+                let installed = false;
+                for (let i = 1; i < currentHookLines.length; i++) {
+                    if (currentHookLines[i] == hookScript) {
+                        // hook is already installed
+                        installed = true;
+                        break;
+                    }
+                }
+
+                if (!installed) {
+                    // add semantic-commits hook to existing hook
+                    writeFileSync(hookPath, `${currentHook}\n\n${hookComment}\n${hookScript}`)
+                }
+            } else {
+                // add new hook file
+                writeFileSync(hookPath, `${hookShebang}\n\n${hookComment}\n${hookScript}`)
+            }
+        }
+    })
+}
 
 export async function commitMsg(commitMessagePath: string) {
     const versionJsonPath = `./${config.versionFilePath}`;
@@ -142,12 +190,14 @@ export function postCommit() {
                 writeFileSync(`./${versionJsonPath}`, JSON.stringify(versionJson, null, config.indent) + '\n');
 
                 // amend the last commit to include the updated version.json
-                exec(`git commit --amend -C HEAD -n ${versionJsonPath}`);
+                const files = [versionJsonPath];
 
                 // if enabled, ammend last commit to include updated package.json
                 if (config.updatePackageVersion) {
-                    exec(`git commit --amend -C HEAD -n ${packageJson.filename}`);
+                    files.push(packageJson.filename);
                 }
+
+                exec(`git commit --amend -C HEAD -n ${files.join(' ')}`);
             });
         }
     });
