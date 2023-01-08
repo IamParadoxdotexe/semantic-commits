@@ -1,8 +1,13 @@
 import { readFileSync, writeFileSync } from "fs";
 import { exec, ExecException } from 'child_process';
-import { config, packageJson, versionJsonPath } from '.';
+import * as path from 'path';
+import { getConfig, packageJson, packagePath } from '.';
 
 export function postCommit() {
+    const config = getConfig();
+
+    const versionJsonPath = path.join(packagePath, config.versionFilePath);
+
     exec('git diff --name-only', (_error: ExecException, stdout: string) => {
         const modifiedFiles = stdout.trim().split(/\r?\n/);
 

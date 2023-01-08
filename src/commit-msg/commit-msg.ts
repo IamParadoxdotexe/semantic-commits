@@ -1,11 +1,14 @@
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import { exec, ExecException } from 'child_process';
-import { config, packageJson, throwError, versionJsonPath } from '.';
+import * as path from 'path';
+import { Config, getConfig, packageJson, throwError,packagePath } from '..';
 
-const prefixOptions = [config.patchPrefix, config.minorPrefix, config.majorPrefix];
-const minPostfixLength = config.minPostfixLength;
+export async function commitMsg(commitMessagePath: string, configOverrides?: Partial<Config>, currentBranchOverride?: string, exit=true) {
+    const config = configOverrides ? getConfig(configOverrides) : getConfig();
 
-export async function commitMsg(commitMessagePath: string) {
+    const prefixOptions = [config.patchPrefix, config.minorPrefix, config.majorPrefix];
+    const versionJsonPath = path.join(packagePath, config.versionFilePath);
+
     // read commit message
     const rawMessage = readFileSync(commitMessagePath, 'utf-8');
     let message = rawMessage.split(/\r?\n/)[0];
@@ -14,7 +17,7 @@ export async function commitMsg(commitMessagePath: string) {
     let currentBranch = '';
     await new Promise<void>(resolve => {
         exec('git branch --show-current', (_error: ExecException, stdout: string) => {
-            currentBranch = stdout.trim();
+            currentBranch = currentBranchOverride || stdout.trim();
 
             exec(`git rev-list --count ${config.head}..${currentBranch}`, (_error: ExecException, stdout: string) => {
                 const commits = parseInt(stdout);
@@ -46,7 +49,7 @@ export async function commitMsg(commitMessagePath: string) {
         } else if (testPrefixes(config.patchBranchPrefixes)) {
             messageParts.unshift(config.patchPrefix);
         } else {
-            throwError(`First commit message should take the form "{${prefixOptions.join('|')}}: {message}".`);
+            throwError(`First commit message should take the form "{${prefixOptions.join('|')}}: {message}".`, exit);
         }
 
         // update commit message if it was auto-prefixed
@@ -58,14 +61,14 @@ export async function commitMsg(commitMessagePath: string) {
     const messagePrefix = messageParts[0];
     if (!prefixOptions.includes(messagePrefix)) {
         throwError(
-            `Commit message prefix must be one of the following version types: [${prefixOptions.join(', ')}].`
+            `Commit message prefix must be one of the following version types: [${prefixOptions.join(', ')}].`, exit
         );
     }
 
     // check for valid postfix
     const messagePostfix = messageParts[1];
-    if (messagePostfix.trim().length < minPostfixLength) {
-        throwError(`Commit message postfix must be at least ${minPostfixLength} characters.`);
+    if (messagePostfix.trim().length < config.minPostfixLength) {
+        throwError(`Commit message postfix must be at least ${config.minPostfixLength} characters.`, exit);
     }
 
     // ensure version file exists
@@ -93,7 +96,7 @@ export async function commitMsg(commitMessagePath: string) {
     const newVersion = versionParts.join('.');
     versionJson.version = newVersion;
 
-    console.log(`Updating version from ${oldVersion} to ${newVersion}...`);
+    // console.log(`Updating version from ${oldVersion} to ${newVersion}...`);
 
     // update main version file
     writeFileSync(versionJsonPath, JSON.stringify(versionJson, null, config.indent) + '\n');
