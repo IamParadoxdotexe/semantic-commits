@@ -1,4 +1,0 @@
-#!/bin/sh
-
-# Installed by semantic-commits.
-semantic-commits post-commit

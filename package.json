@@ -1,23 +1,18 @@
 {
   "name": "semantic-commits",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "author": "Nathan Klingensmith",
   "email": "paradoxpyt@gmail.com",
   "url": "https://thenjk.com",
   "description": "Automatic semantic versions via commit messages",
   "keywords": [
-    "auto",
     "version",
     "semantic",
-    "commit",
-    "message",
-    "automatic",
-    "semver"
+    "commit"
   ],
   "devDependencies": {
     "@types/find-package-json": "^1.2.3",
     "@types/node": "^18.11.18",
-    "husky": "^8.0.3",
     "typescript": "^4.9.4"
   },
   "bin": "dist/bin.js",

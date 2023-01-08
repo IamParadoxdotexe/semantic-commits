@@ -1,13 +1,11 @@
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import { exec, ExecException } from 'child_process';
-import { config, packageJson, throwError } from '.';
+import { config, packageJson, throwError, versionJsonPath } from '.';
 
 const prefixOptions = [config.patchPrefix, config.minorPrefix, config.majorPrefix];
 const minPostfixLength = config.minPostfixLength;
 
 export async function commitMsg(commitMessagePath: string) {
-    const versionJsonPath = `./${config.versionFilePath}`;
-
     // read commit message
     const rawMessage = readFileSync(commitMessagePath, 'utf-8');
     let message = rawMessage.split(/\r?\n/)[0];
