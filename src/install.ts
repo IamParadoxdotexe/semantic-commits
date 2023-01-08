@@ -14,6 +14,10 @@ const hookShebang = `#!/bin/sh`
 export function install() {
     // get path for git hooks; usually is .git/hooks, but could be custom like .husky
     exec('git config core.hooksPath', { cwd: packagePath }, (_error: ExecException, stdout: string) => {
+        if (!stdout) {
+            throwError('Git directory could not be found. Is git running in this folder?')
+        }
+
         const hooksPath = path.join(packagePath, stdout.trim());
 
         // attempt to install all required hooks
