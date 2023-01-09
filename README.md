@@ -1,6 +1,6 @@
 # semantic-commits
 
-`semantic-commits` makes it easy to add semantic versioning to any system based on commits messages alone. Version is tracked in a standalone `version.json` file, as well as directly in `package.json`.
+`semantic-commits` makes it easy to add semantic versioning to any system based on commits messages alone. Version is tracked in a standalone `version.json` file and can be used to update the `package.json` version as well.
 
 Examples:
 - You commit *PATCH: Fixed bug* — `0.0.0` will update to `0.0.1`.
@@ -63,7 +63,7 @@ Custom configuration can be added in your `package.json` file under `semanticCom
         "majorBranchPrefixes": ['release/'],
         "minorBranchPrefixes": ['feature/', 'refactor/'],
         "patchBranchPrefixes": ['bug/', 'fix/', 'improvement/'],
-        "updatePackageVersion": true,
+        "updatePackageVersion": false,
         "indent": 2,
     }
 }

@@ -95,5 +95,5 @@ describe('semantic-commits commit-msg', () => {
 });
 
 async function testCommitMsg(currentBranchOverride = 'origin/HEAD') {
-    await commitMsg(commitMessagePath, { versionFilePath, updatePackageVersion: false }, currentBranchOverride, false);
+    await commitMsg(commitMessagePath, { versionFilePath }, currentBranchOverride, false);
 }
