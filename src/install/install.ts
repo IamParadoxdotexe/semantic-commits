@@ -1,11 +1,11 @@
-import { existsSync, readFileSync, writeFileSync } from "fs";
+import { chmodSync, existsSync, readFileSync, writeFileSync } from "fs";
 import { exec, ExecException } from "child_process";
 import * as path from 'path';
-import { packagePath, throwError } from "..";
+import { consoleLog, packagePath, throwError } from "..";
 
 const hooks = [
-    ['commit-msg', 'semantic-commits commit-msg $1'],
-    ['post-commit', 'semantic-commits post-commit']
+    ['commit-msg', 'npx semantic-commits commit-msg $1'],
+    ['post-commit', 'npx semantic-commits post-commit']
 ]
 
 const hookComment = '# Installed by semantic-commits.';
@@ -15,9 +15,7 @@ export async function install(hooksPathOverride?: string) {
     // get path for git hooks; usually is .git/hooks, but could be custom like .husky
     await new Promise<void>(resolve => 
         exec('git config core.hooksPath', { cwd: packagePath }, (_error: ExecException, stdout: string) => {
-            if (!stdout) {
-                throwError('Git directory could not be found. Is git running in this folder?')
-            }
+            stdout = stdout || '.git/hooks'
 
             const hooksPath = hooksPathOverride || path.join(packagePath, stdout.trim());
 
@@ -46,14 +44,16 @@ export async function install(hooksPathOverride?: string) {
 
                     // install hook along-side current hook
                     if (!installed) {
-                        writeFileSync(hookPath, `${currentHook}\n\n${hookComment}\n${hookScript}`)
+                        writeFileSync(hookPath, `${currentHook}\n\n${hookComment}\n${hookScript}`);
                     }
                 } else {
                     // install new hook
-                    writeFileSync(hookPath, `${hookShebang}\n\n${hookComment}\n${hookScript}`)
+                    writeFileSync(hookPath, `${hookShebang}\n\n${hookComment}\n${hookScript}`);
+                    chmodSync(hookPath, 0o775); // make executable
                 }
             }
-
+            
+            consoleLog('All hooks installed.')
             resolve();
         })
     );
