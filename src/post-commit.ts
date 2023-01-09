@@ -24,9 +24,9 @@ export function postCommit() {
                 // amend the last commit to include the updated version.json
                 const files = [versionJsonPath];
 
-                // if enabled, ammend last commit to include updated package.json
+                // if enabled, ammend last commit to include updated package.json and package-lock.json
                 if (config.updatePackageVersion) {
-                    files.push(packageJson.filename);
+                    files.push(packageJson.filename, packageJson.filename.replace('.json', '-lock.json'));
                 }
 
                 exec(`git commit --amend -C HEAD -n ${files.join(' ')}`);

@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, writeFileSync } from "fs";
-import { exec, ExecException } from 'child_process';
+import { exec, ExecException, execSync } from 'child_process';
 import * as path from 'path';
 import { Config, getConfig, packageJson, throwError, packagePath, consoleLog } from '..';
 
@@ -108,5 +108,10 @@ export async function commitMsg(commitMessagePath=defaultCommitMessagePath, conf
         packageJson.value.version = newVersion;
         delete packageJson.value.__path;
         writeFileSync(packageJson.filename, JSON.stringify(packageJson.value, null, config.indent) + '\n');
+
+        // update package-lock.json
+        await new Promise<void>(resolve => {
+            execSync('npm i --package-lock-only')
+        })
     }
 }
