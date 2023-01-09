@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, writeFileSync } from "fs";
-import { exec, ExecException, execSync } from 'child_process';
+import { execSync } from 'child_process';
 import * as path from 'path';
 import { Config, getConfig, packageJson, throwError, packagePath, consoleLog } from '..';
 
@@ -16,22 +16,14 @@ export async function commitMsg(commitMessagePath=defaultCommitMessagePath, conf
     let message = rawMessage.split(/\r?\n/)[0];
 
     // check if commit is first on the branch
-    let currentBranch = '';
-    await new Promise<void>(resolve => {
-        exec('git branch --show-current', (_error: ExecException, stdout: string) => {
-            currentBranch = currentBranchOverride || stdout.trim();
+    const headBranch = execSync("git remote show origin | sed -n '/HEAD branch/s/.*: //p'").toString().trim();
+    const currentBranch = currentBranchOverride || execSync('git branch --show-current').toString().trim();
 
-            exec(`git rev-list --count ${config.head}..${currentBranch}`, (_error: ExecException, stdout: string) => {
-                const commits = parseInt(stdout);
-                // only the first commit of a branch should be version marked
-                if (commits > 0) {
-                    consoleLog(`Branch already has ${commits} commit${commits > 1 ? 's' : ''}. Skipping version update...`)
-                    process.exit();
-                }
-                resolve();
-            });
-        });
-    });
+    const commitCount = parseInt(execSync(`git rev-list --count origin/${headBranch}..${currentBranch}`).toString().trim());
+    if (commitCount > 0) {
+        consoleLog(`Branch already has ${commitCount} commit${commitCount > 1 ? 's' : ''}. Skipping version update...`)
+        process.exit();
+    }
 
     // check for merge commit
     if (message.startsWith('Merge branch')) {

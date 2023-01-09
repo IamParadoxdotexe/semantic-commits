@@ -63,7 +63,6 @@ Custom configuration can be added in your `package.json` file under `semanticCom
         "majorBranchPrefixes": ['release/'],
         "minorBranchPrefixes": ['feature/', 'refactor/'],
         "patchBranchPrefixes": ['bug/', 'fix/', 'improvement/'],
-        "head": "origin/HEAD",
         "updatePackageVersion": true,
         "indent": 2,
     }
@@ -84,6 +83,5 @@ npx semantic-commits config
 - `majorBranchPrefixes` - Branch prefixes to assume are MAJOR releases.
 - `minorBranchPrefixes` - Branch prefixes to assume are MINOR releases.
 - `patchBranchPrefixes` - Branch prefixes to assume are PATCH releases.
-- `head` - HEAD branch used to determine whether the current commit is the first on the branch.
 - `updatePackageVersion`: Whether to update `package.json > "version"`.
 - `indent`: Level of identation used when writing version files.

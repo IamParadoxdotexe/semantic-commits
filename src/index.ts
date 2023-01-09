@@ -13,7 +13,6 @@ export interface Config {
     majorBranchPrefixes: string[];
     minorBranchPrefixes: string[];
     patchBranchPrefixes: string[];
-    head: string;
     updatePackageVersion: boolean;
     indent: number;
 }
@@ -28,7 +27,6 @@ const defaultConfig: Config = {
     "majorBranchPrefixes": ['release/'],
     "minorBranchPrefixes": ['feature/', 'refactor/'],
     "patchBranchPrefixes": ['bug/', 'fix/', 'improvement/'],
-    "head": "origin/HEAD",
     "updatePackageVersion": true,
     "indent": 2,
     ...packageJson.value["semanticCommits"]
