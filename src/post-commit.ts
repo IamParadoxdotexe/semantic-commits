@@ -12,14 +12,14 @@ export function postCommit() {
         const modifiedFiles = stdout.trim().split(/\r?\n/);
 
         // check if version.json has been modified by commit-msg hook
-        if (modifiedFiles.includes(versionJsonPath)) {
+        if (modifiedFiles.includes(getConfig().versionFilePath)) {
             exec('git rev-parse --short HEAD', (_error: ExecException, stdout: string) => {
                 const hash = stdout.trim();
 
                 // add commit hash to version.json
-                const versionJson = JSON.parse(readFileSync(`./${versionJsonPath}`, 'utf-8'));
+                const versionJson = JSON.parse(readFileSync(versionJsonPath, 'utf-8'));
                 versionJson.versionCommitHash = hash;
-                writeFileSync(`./${versionJsonPath}`, JSON.stringify(versionJson, null, config.indent) + '\n');
+                writeFileSync(versionJsonPath, JSON.stringify(versionJson, null, config.indent) + '\n');
 
                 // amend the last commit to include the updated version.json
                 const files = [versionJsonPath];

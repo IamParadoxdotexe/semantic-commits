@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import { exec, ExecException } from 'child_process';
 import * as path from 'path';
-import { Config, getConfig, packageJson, throwError,packagePath } from '..';
+import { Config, getConfig, packageJson, throwError, packagePath, consoleLog } from '..';
 
 export const defaultCommitMessagePath = '.git/COMMIT_EDITMSG';
 
@@ -25,7 +25,7 @@ export async function commitMsg(commitMessagePath=defaultCommitMessagePath, conf
                 const commits = parseInt(stdout);
                 // only the first commit of a branch should be version marked
                 if (commits > 0) {
-                    console.log(`Branch already has ${commits} commit${commits > 1 ? 's' : ''}. Skipping version update...`)
+                    consoleLog(`Branch already has ${commits} commit${commits > 1 ? 's' : ''}. Skipping version update...`)
                     process.exit();
                 }
                 resolve();
@@ -98,7 +98,7 @@ export async function commitMsg(commitMessagePath=defaultCommitMessagePath, conf
     const newVersion = versionParts.join('.');
     versionJson.version = newVersion;
 
-    // console.log(`Updating version from ${oldVersion} to ${newVersion}...`);
+    consoleLog(`Updating version from ${oldVersion} to ${newVersion}...`);
 
     // update main version file
     writeFileSync(versionJsonPath, JSON.stringify(versionJson, null, config.indent) + '\n');

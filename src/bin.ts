@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import path = require('path')
-import { defaultCommitMessagePath } from './commit-msg'
-import sc = require('./')
+import { defaultCommitMessagePath, install, commitMsg, postCommit, getConfig } from './'
 
 // Show usage and exit with code
 function help(code: number) {
@@ -18,10 +17,10 @@ const [, , cmd, ...args] = process.argv
 
 // CLI commands
 const cmds: { [key: string]: () => void | Promise<void> } = {
-    'install': sc.install,
-    'config': () => console.log(sc.getConfig()),
-    'commit-msg': () => sc.commitMsg(args[0]),
-    'post-commit': sc.postCommit,
+    'install': install,
+    'config': () => console.log(getConfig()),
+    'commit-msg': () => commitMsg(args[0]),
+    'post-commit': postCommit,
     ['-v']: () =>
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-var-requires
         console.log(require(path.join(__dirname, '../package.json')).version),

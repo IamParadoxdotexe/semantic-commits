@@ -1,5 +1,4 @@
 import * as finder from 'find-package-json';
-import * as path from 'path';
 
 export const packageJson = finder().next();
 
@@ -49,6 +48,10 @@ export function throwError(message: string, exit=true) {
     } else {
         throw new Error(`semantic-commits - ${ message }`)
     }
+}
+
+export function consoleLog(message: string) {
+    console.log(`semantic-commits - ${message}`)
 }
 
 export * from './install';
