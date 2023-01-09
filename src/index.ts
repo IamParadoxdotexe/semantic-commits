@@ -28,7 +28,7 @@ const defaultConfig: Config = {
     "minorBranchPrefixes": ['feature/', 'refactor/'],
     "patchBranchPrefixes": ['bug/', 'fix/', 'improvement/'],
     "updatePackageVersion": false,
-    "indent": 2,
+    "indent": 4,
     ...packageJson.value["semanticCommits"]
 }
 

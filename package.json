@@ -1,6 +1,6 @@
 {
   "name": "semantic-commits",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "author": "Nathan Klingensmith",
   "email": "paradoxpyt@gmail.com",
   "url": "https://thenjk.com",
@@ -40,5 +40,9 @@
   ],
   "dependencies": {
     "find-package-json": "^1.2.0"
+  },
+  "semanticCommits": {
+    "indent": 2,
+    "updatePackageVersion": true
   }
 }

@@ -64,7 +64,7 @@ Custom configuration can be added in your `package.json` file under `semanticCom
         "minorBranchPrefixes": ['feature/', 'refactor/'],
         "patchBranchPrefixes": ['bug/', 'fix/', 'improvement/'],
         "updatePackageVersion": false,
-        "indent": 2,
+        "indent": 4,
     }
 }
 ```
