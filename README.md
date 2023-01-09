@@ -70,6 +70,11 @@ Custom configuration can be added in your `package.json` file under `semanticCom
 }
 ```
 
+To check your custom config is being read properly, you can print it out with the command below.
+```
+npx semantic-commits config
+```
+
 ## Options:
 - `majorPrefix` - Commit message prefix used to increment the MAJOR version.
 - `minorPrefix` - Commit message prefix used to increment the MINOR version.
