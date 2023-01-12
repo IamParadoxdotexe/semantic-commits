@@ -39,10 +39,10 @@ export function getConfig(configOverrides?: Partial<Config>): Config {
     }
 }
 
-export function throwError(message: string, exit=true) {
+export function throwError(message: string, exit=true, code=1) {
     if (exit) {
         console.error(`semantic-commits - ${ message }`);
-        process.exit(1);
+        process.exit(code);
     } else {
         throw new Error(`semantic-commits - ${ message }`)
     }

@@ -15,7 +15,7 @@ export async function install(hooksPathOverride?: string) {
     try {
         execSync('git status');
     } catch {
-        throwError('Cannot install git hooks outside a git repository.');
+        throwError('Cannot install git hooks outside a git repository.', true, 0);
     }
 
     // get path for git hooks; usually is .git/hooks, but could be custom like .husky
