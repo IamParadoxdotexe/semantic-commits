@@ -1,5 +1,5 @@
 import { chmodSync, existsSync, readFileSync, writeFileSync } from "fs";
-import { exec, ExecException } from "child_process";
+import { exec, execSync, ExecException } from "child_process";
 import * as path from 'path';
 import { consoleLog, packagePath, throwError } from "..";
 
@@ -12,6 +12,12 @@ const hookComment = '# Installed by semantic-commits.';
 export const hookShebang = `#!/bin/sh`
 
 export async function install(hooksPathOverride?: string) {
+    try {
+        execSync('git status');
+    } catch {
+        throwError('Cannot install git hooks outside a git repository.');
+    }
+
     // get path for git hooks; usually is .git/hooks, but could be custom like .husky
     await new Promise<void>(resolve => 
         exec('git config core.hooksPath', { cwd: packagePath }, (_error: ExecException, stdout: string) => {
